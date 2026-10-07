@@ -1,0 +1,145 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>JC Browser</title>
+
+  <style>
+    :root {
+      --bg: #ffffff;
+      --surface: #f2f2f2;
+      --text: #000000;
+      --accent: #0a84ff;
+      --border: #ccc;
+    }
+
+    .dark {
+      --bg: #000000;
+      --surface: #111111;
+      --text: #ffffff;
+      --accent: #1f6bff;
+      --border: #333333;
+    }
+
+    html, body {
+      margin: 0;
+      height: 100%;
+      background: var(--bg);
+      color: var(--text);
+      font-family: system-ui, Arial;
+      display: flex;
+      flex-direction: column;
+    }
+
+    #topbar {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 12px;
+      padding: 10px;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      font-weight: 600;
+    }
+
+    .switch {
+      position: relative;
+      width: 60px;
+      height: 28px;
+      background: #555;
+      border-radius: 20px;
+      cursor: pointer;
+    }
+
+    .switch::after {
+      content: "";
+      position: absolute;
+      width: 24px;
+      height: 24px;
+      background: white;
+      border-radius: 50%;
+      top: 2px;
+      left: 2px;
+      transition: 0.25s;
+    }
+
+    .switch.active {
+      background: var(--accent);
+    }
+
+    .switch.active::after {
+      left: 34px;
+    }
+
+    iframe {
+      width: 100%;
+      height: 100%;
+      border: 0;
+      display: block;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div id="topbar">
+    <span>Light Mode</span>
+    <div id="themeSwitch" class="switch"></div>
+    <span>Dark Mode</span>
+  </div>
+
+  <iframe id="proxyFrame" src="https://jcunblocked.space/" allowfullscreen></iframe>
+
+  <script>
+    /* ------------------ DARK MODE ------------------ */
+    const themeSwitch = document.getElementById("themeSwitch");
+
+    function applyTheme(mode) {
+      if (mode === "dark") {
+        document.body.classList.add("dark");
+        themeSwitch.classList.add("active");
+      } else {
+        document.body.classList.remove("dark");
+        themeSwitch.classList.remove("active");
+      }
+      localStorage.setItem("jc_theme", mode);
+    }
+
+    applyTheme(localStorage.getItem("jc_theme") || "light");
+
+    themeSwitch.onclick = () => {
+      const newTheme = document.body.classList.contains("dark") ? "light" : "dark";
+      applyTheme(newTheme);
+    };
+
+    /* ------------------ BLOCK NEW TABS ------------------ */
+
+    // Block window.open inside iframe
+    const iframe = document.getElementById("proxyFrame");
+
+    iframe.onload = () => {
+      try {
+        const win = iframe.contentWindow;
+
+        // Override window.open
+        win.open = function() {
+          console.log("Blocked window.open()");
+          return null;
+        };
+
+        // Override target=_blank links
+        win.document.addEventListener("click", (e) => {
+          const link = e.target.closest("a");
+          if (link && link.target === "_blank") {
+            e.preventDefault();
+            console.log("Blocked new tab link");
+          }
+        });
+
+      } catch (err) {
+        // Cross-origin protection (normal)
+      }
+    };
+  </script>
+</body>
+</html>
